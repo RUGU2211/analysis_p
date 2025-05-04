@@ -1,4 +1,10 @@
 # =============================
+# 📌 0. To check wheather package install or not
+# =============================
+
+pip show pandas numpy matplotlib seaborn
+
+# =============================
 # 📌 1. Import Necessary Libraries
 # =============================
 
@@ -6,6 +12,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import sqlite3
 
 # =============================
 # 📌 2. Load Dataset
