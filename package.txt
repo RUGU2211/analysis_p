@@ -1,0 +1,356 @@
+# =============================
+# 📌 1. Import Necessary Libraries
+# =============================
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# =============================
+# 📌 2. Load Dataset
+# =============================
+
+df = pd.read_csv("your_dataset.csv")  # Update with your file path
+
+# Takeaway: Successfully loaded the dataset. Let's explore its structure.
+
+# =============================
+# 📌 3. Basic Data Exploration
+# =============================
+
+# Display first 5 rows
+df.head()
+
+# Dataset shape (rows, columns)
+print("Shape of dataset:", df.shape)
+
+# Column names
+print("Columns:", df.columns)
+
+# Data types of each column
+print("Data Types:\n", df.dtypes)
+
+# Summary statistics
+print("Summary Statistics:\n", df.describe())
+
+# Count unique values in each column
+print("Unique Values per Column:\n", df.nunique())
+
+# Identify categorical and numerical columns
+categorical_cols = df.select_dtypes(include=['object']).columns
+numerical_cols = df.select_dtypes(include=['number']).columns
+
+print("Categorical Columns:", categorical_cols)
+print("Numerical Columns:", numerical_cols)
+
+# Takeaway: This helps us understand the dataset structure and identify potential issues.
+
+# =============================
+# 📌 4. Handling Missing Values
+# =============================
+
+# Check for missing values
+print("Missing Values:\n", df.isnull().sum())
+
+# Drop columns with too many missing values (>50% missing)
+df.dropna(axis=1, thresh=int(0.5 * len(df)), inplace=True)
+
+# Impute numerical columns with mean/median
+df.fillna(df.mean(), inplace=True)  # Mean
+# df.fillna(df.median(), inplace=True)  # Median
+
+# Impute categorical columns with mode
+df.fillna(df.select_dtypes(include=['object']).mode().iloc[0], inplace=True)
+
+# Forward Fill / Backward Fill
+df.fillna(method='ffill', inplace=True)  # Forward Fill
+df.fillna(method='bfill', inplace=True)  # Backward Fill
+
+# Takeaway: Missing values have been handled using appropriate imputation techniques.
+
+# =============================
+# 📌 5. Handling Duplicates
+# =============================
+
+# Check for duplicates
+print("Duplicate Rows:", df.duplicated().sum())
+
+# Remove duplicates
+df.drop_duplicates(inplace=True)
+
+# Takeaway: Duplicate rows removed to avoid data redundancy.
+
+# =============================
+# 📌 6. Handling Incorrect Data Types
+# =============================
+
+# Convert date columns to datetime format
+df['date_column'] = pd.to_datetime(df['date_column'], errors='coerce')
+
+# Convert categorical columns to string
+df['category_column'] = df['category_column'].astype(str)
+
+# Convert numerical columns to appropriate types
+df['integer_column'] = df['integer_column'].astype(int)
+df['float_column'] = df['float_column'].astype(float)
+
+# Takeaway: Data types have been corrected to ensure accurate analysis.
+
+# =============================
+# 📌 7. Drop Unnecessary Columns
+# =============================
+
+# Drop columns that are not needed
+columns_to_drop = ['column1', 'column2']  # Update as required
+df.drop(columns=columns_to_drop, axis=1, inplace=True)
+
+# Takeaway: Removed unnecessary columns to improve dataset quality.
+
+# =============================
+# 📌 8. Handling Outliers
+# =============================
+
+# Detect Outliers using Boxplot
+plt.figure(figsize=(6,4))
+sns.boxplot(x=df['numerical_column'])
+plt.title("Boxplot to Detect Outliers")
+plt.show()
+
+# IQR Method to Remove Outliers
+Q1 = df['numerical_column'].quantile(0.25)
+Q3 = df['numerical_column'].quantile(0.75)
+IQR = Q3 - Q1
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+df = df[(df['numerical_column'] >= lower_bound) & (df['numerical_column'] <= upper_bound)]
+
+# Takeaway: Outliers were removed using IQR method to ensure a clean dataset.
+
+# =============================
+# 📌 9. Feature Engineering
+# =============================
+
+# Extract year, month, day from datetime column
+df['year'] = df['date_column'].dt.year
+df['month'] = df['date_column'].dt.month
+df['day'] = df['date_column'].dt.day
+
+# Create new column from existing ones
+df['new_column'] = df['existing_column1'] + df['existing_column2']
+
+# Binning Numerical Data
+df['age_group'] = pd.cut(df['age'], bins=[0, 18, 35, 50, 100], labels=['Teen', 'Young Adult', 'Adult', 'Senior'])
+
+# Takeaway: New features were created to enhance data analysis.
+
+# =============================
+# 📌 10. Data Analysis (Crosstab, GroupBy, Pivot, Value Counts)
+# =============================
+
+# Value Counts
+print(df['category_column'].value_counts())
+
+# Crosstab Analysis
+print(pd.crosstab(df['category1'], df['category2']))
+
+# Group By Aggregation
+print(df.groupby('category_column')['numerical_column'].mean())
+
+# Pivot Table
+print(df.pivot_table(index='category1', columns='category2', values='numerical_column', aggfunc='sum'))
+
+# Takeaway: Aggregation techniques help us understand the dataset better.
+
+# =============================
+# 📌 11. Data Visualization
+# =============================
+
+# ---- Univariate Analysis ----
+plt.figure(figsize=(6,4))
+sns.histplot(df['numerical_column'], bins=30, kde=True)
+plt.title("Histogram of Numerical Column")
+plt.show()
+
+plt.figure(figsize=(6,4))
+sns.boxplot(x=df['numerical_column'])
+plt.title("Boxplot of Numerical Column")
+plt.show()
+
+plt.figure(figsize=(6,4))
+sns.countplot(x=df['category_column'], data=df)
+plt.title("Countplot of Categorical Column")
+plt.xticks(rotation=45)
+plt.show()
+
+# ---- Bivariate Analysis ----
+plt.figure(figsize=(6,4))
+sns.scatterplot(x='feature1', y='feature2', hue='category_column', data=df)
+plt.title("Scatter Plot of Feature1 vs Feature2")
+plt.show()
+
+plt.figure(figsize=(6,4))
+sns.barplot(x='category_column', y='numerical_column', data=df)
+plt.title("Bar Plot of Categorical vs Numerical Column")
+plt.xticks(rotation=45)
+plt.show()
+
+plt.figure(figsize=(8,4))
+sns.lineplot(x='date_column', y='numerical_column', data=df)
+plt.title("Line Plot Over Time")
+plt.xticks(rotation=45)
+plt.show()
+
+# ---- Multivariate Analysis ----
+plt.figure(figsize=(10,6))
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm', linewidths=0.5)
+plt.title("Correlation Heatmap")
+plt.show()
+
+sns.pairplot(df, hue='category_column')
+plt.title("Pairplot for Multivariate Analysis")
+plt.show()
+
+plt.figure(figsize=(8,4))
+sns.boxplot(x='category_column', y='numerical_column', hue='subcategory_column', data=df)
+plt.title("Boxplot with Multiple Categories")
+plt.xticks(rotation=45)
+plt.show()
+
+# =============================
+# 📌 12. Save Cleaned Dataset
+# =============================
+
+df.to_csv("cleaned_data.csv", index=False)
+df.to_excel("cleaned_data.xlsx", index=False)
+
+# Takeaway: Final cleaned dataset is saved for future use.
+
+
+
+# =============================
+# Q1: Create DB, Table and Insert Data
+# =============================
+
+import sqlite3
+
+# Connect and create DB
+conn = sqlite3.connect('student.db')
+cursor = conn.cursor()
+
+# Create Table
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS student(
+    name TEXT,
+    roll_no INTEGER,
+    sap_id TEXT,
+    program TEXT,
+    semester TEXT,
+    marks INTEGER,
+    result TEXT CHECK(result IN ('Pass', 'Fail'))
+)
+''')
+
+# Insert data
+data = [
+    ('Armaan', 1, 'A001', 'DS', 'I', 80, 'Pass'),
+    ('Amit', 2, 'A002', 'CS', 'II', 90, 'Pass'),
+    ('Arya', 3, 'A003', 'IT', 'III', 70, 'Pass'),
+    ('Aryan', 4, 'A004', 'EXTC', 'I', 20, 'Fail'),
+    ('Aman', 5, 'A005', 'MXTC', 'II', 10, 'Fail')
+]
+cursor.executemany('INSERT INTO student VALUES (?, ?, ?, ?, ?, ?, ?)', data)
+
+conn.commit()
+print("✅ Data inserted successfully.")
+
+# =============================
+# Q2: Display All Records
+# =============================
+
+cursor.execute('SELECT * FROM student')
+students = cursor.fetchall()
+print("\nAll Students:")
+for s in students:
+    print(s)
+
+# =============================
+# Q3: Search for a Specific Student
+# =============================
+
+cursor.execute("SELECT * FROM student WHERE name = 'Aryan' AND sap_id = 'A004'")
+print("\nSearch Aryan:", cursor.fetchone())
+
+# =============================
+# Q4: Update a Record
+# =============================
+
+cursor.execute("UPDATE student SET marks = 85, result = 'Pass' WHERE name = 'Aryan' AND sap_id = 'A004'")
+conn.commit()
+
+cursor.execute("SELECT * FROM student WHERE name = 'Aryan'")
+print("\nUpdated Aryan:", cursor.fetchone())
+
+# =============================
+# Q5: Delete a Record
+# =============================
+
+cursor.execute("DELETE FROM student WHERE name = 'Aman'")
+conn.commit()
+
+cursor.execute("SELECT * FROM student")
+print("\nAfter Deletion:")
+for s in cursor.fetchall():
+    print(s)
+
+# =============================
+# Q6: Aggregate Query – Count Pass/Fail
+# =============================
+
+cursor.execute("SELECT result, COUNT(*) FROM student GROUP BY result")
+print("\nPass/Fail Count:")
+for row in cursor.fetchall():
+    print(row)
+
+# =============================
+# Q7: Students with Marks > 75
+# =============================
+
+cursor.execute("SELECT name, marks FROM student WHERE marks > 75")
+print("\nStudents with marks > 75:")
+for row in cursor.fetchall():
+    print(row)
+
+# =============================
+# Q8: Order by Marks (Descending)
+# =============================
+
+cursor.execute("SELECT name, marks FROM student ORDER BY marks DESC")
+print("\nStudents ordered by marks:")
+for row in cursor.fetchall():
+    print(row)
+
+# =============================
+# Q9: DISTINCT Programs
+# =============================
+
+cursor.execute("SELECT DISTINCT program FROM student")
+print("\nDistinct Programs:")
+for row in cursor.fetchall():
+    print(row)
+
+# =============================
+# Q10: Drop Table (Optional Cleanup)
+# =============================
+
+# Uncomment below if you want to delete the table
+# cursor.execute("DROP TABLE student")
+# conn.commit()
+
+# =============================
+# Close Connection
+# =============================
+
+conn.close()
+
